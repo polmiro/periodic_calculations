@@ -1,17 +1,17 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 # Maintain your gem's version:
-require "count_during/version"
+require "periodic_calculations/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = "count_during"
-  s.version     = CountDuring::VERSION
+  s.name        = "periodic_calculations"
+  s.version     = PeriodicCalculations::VERSION
   s.authors     = ["Pol"]
   s.email       = ["polmiro@gmail.com"]
   s.homepage    = ""
-  s.summary     = "Retrieve table stats in periods of time"
-  s.description = "Retrieve table stats in periods of time"
+  s.summary     = "Retrieve periodic stats in periods of time"
+  s.description = "Retrieve periodic stats in periods of time"
   s.license     = 'MIT'
 
   s.files         = `git ls-files`.split("\n")

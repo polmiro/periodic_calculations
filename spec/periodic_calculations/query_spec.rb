@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe CountDuring::Query do
+describe PeriodicCalculations::Query do
 
   before { Activity.delete_all }
 
@@ -14,8 +14,8 @@ describe CountDuring::Query do
   describe "#execute" do
 
     def execute(scope, *args)
-      query_options = CountDuring::QueryOptions.new(*args)
-      CountDuring::Query.new(scope, query_options).execute
+      query_options = PeriodicCalculations::QueryOptions.new(*args)
+      PeriodicCalculations::Query.new(scope, query_options).execute
     end
 
     it "should add missing values within range" do

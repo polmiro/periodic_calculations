@@ -1,4 +1,4 @@
-module CountDuring
+module PeriodicCalculations
   class Query
     INTERVAL_UNIT = [:day, :week, :month, :year]
 
@@ -89,4 +89,4 @@ module CountDuring
 
 end
 
-ActiveRecord::Base.extend CountDuring
+ActiveRecord::Base.extend PeriodicCalculations

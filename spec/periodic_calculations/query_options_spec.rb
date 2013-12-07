@@ -1,4 +1,4 @@
-describe CountDuring::QueryOptions do
+describe PeriodicCalculations::QueryOptions do
 
   it "initializes without errors when valid parameters" do
     time = DateTime.now

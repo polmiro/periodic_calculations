@@ -3,7 +3,7 @@ require File.expand_path('../boot', __FILE__)
 require 'rails/all'
 
 Bundler.require(*Rails.groups)
-require "count_during"
+require "periodic_calculations"
 
 module Dummy
   class Application < Rails::Application

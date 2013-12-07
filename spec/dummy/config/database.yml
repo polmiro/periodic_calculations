@@ -1,7 +1,7 @@
 development:
   adapter: postgresql
   encoding: utf8
-  database: count_during_development
+  database: periodic_calculations_development
   pool: 5
   host: 127.0.0.1
   username: rewardli_su
@@ -11,7 +11,7 @@ development:
 test:
   adapter: postgresql
   encoding: utf8
-  database: count_during_test
+  database: periodic_calculations_test
   pool: 5
   host: 127.0.0.1
   username: rewardli_su

@@ -12,7 +12,7 @@ describe "Model" do
   describe ".count_during" do
     before do
       result = double(:execute => true)
-      CountDuring::Query.stub(:new).and_return(result)
+      PeriodicCalculations::Query.stub(:new).and_return(result)
     end
 
     let(:start_time) { DateTime.now - 1.day }
@@ -24,8 +24,8 @@ describe "Model" do
       }
     end
 
-    it "builts the correct CountDuring::QueryOptions" do
-      CountDuring::QueryOptions
+    it "builts the correct PeriodicCalculations::QueryOptions" do
+      PeriodicCalculations::QueryOptions
         .should_receive(:new)
         .with(start_time, end_time, options)
         .once
@@ -33,10 +33,10 @@ describe "Model" do
       klass.count_during(start_time, end_time, options)
     end
 
-    it "executes a Query with an instance of CountDuring::QueryOptions" do
-      CountDuring::Query
+    it "executes a Query with an instance of PeriodicCalculations::QueryOptions" do
+      PeriodicCalculations::Query
         .should_receive(:new)
-        .with(klass.all, an_instance_of(CountDuring::QueryOptions))
+        .with(klass.all, an_instance_of(PeriodicCalculations::QueryOptions))
         .once
 
       klass.count_during(start_time, end_time, options)

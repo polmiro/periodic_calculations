@@ -1,4 +1,4 @@
-module CountDuring
+module PeriodicCalculations
   module Base
     extend ActiveSupport::Concern
 

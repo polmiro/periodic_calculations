@@ -1,16 +1,16 @@
-# CountDuring
+# PeriodicCalculations
 
-[![Build Status](https://travis-ci.org/polmiro/count_during.png)](https://travis-ci.org/polmiro/count_during)
-[![Code Climate](https://codeclimate.com/github/polmiro/count_during.png)](https://codeclimate.com/github/polmiro/count_during)
-[![Coverage Status](https://coveralls.io/repos/polmiro/count_during/badge.png)](https://coveralls.io/r/polmiro/count_during)
-[![Gem Version](https://badge.fury.io/rb/count_during.png)](http://badge.fury.io/rb/count_during)
+[![Build Status](https://travis-ci.org/polmiro/periodic_calculations.png)](https://travis-ci.org/polmiro/periodic_calculations)
+[![Code Climate](https://codeclimate.com/github/polmiro/periodic_calculations.png)](https://codeclimate.com/github/polmiro/periodic_calculations)
+[![Coverage Status](https://coveralls.io/repos/polmiro/periodic_calculations/badge.png)](https://coveralls.io/r/polmiro/periodic_calculations)
+[![Gem Version](https://badge.fury.io/rb/periodic_calculations.png)](http://badge.fury.io/rb/periodic_calculations)
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'count_during'
+gem 'periodic_calculations'
 ```
 
 And then execute:

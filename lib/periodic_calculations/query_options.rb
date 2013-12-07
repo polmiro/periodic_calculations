@@ -1,4 +1,4 @@
-module CountDuring
+module PeriodicCalculations
   class QueryOptions
     INTERVAL_UNIT = [:day, :week, :month, :year]
 
