@@ -20,91 +20,90 @@ describe PeriodicCalculations::Query do
       PeriodicCalculations::Query.new(scope, query_options).execute
     end
 
-    it "should add missing values within range" do
-      execute(scope, operation, column_name, start_time, end_time, options).should have(3).items
+    describe "Intervals" do
+      it "should add missing values within range" do
+        execute(scope, operation, column_name, start_time, end_time, options).should have(3).items
+      end
+
+      it "should return one single day when same dates" do
+        start_time = time
+        end_time = time
+
+        execute(scope, operation, column_name, start_time, end_time, options).should have(1).items
+      end
+
+      it "should return two day when consecutive" do
+        start_time = time
+        end_time = time + 1.day
+
+        execute(scope, operation, column_name, start_time, end_time, options).should have(2).items
+      end
+
+      it "should operate by day" do
+        start_time = time
+        end_time = time + 2.day
+        options.merge!(:interval_unit => :day)
+
+        execute(scope, operation, column_name, start_time, end_time, options).should have(3).items
+      end
+
+      it "should operate by week" do
+        start_time = time
+        end_time = time + 1.week
+        options.merge!(:interval_unit => :week)
+
+        execute(scope, operation, column_name, start_time, end_time, options).should have(2).items
+      end
+
+      it "should operate by month" do
+        start_time = time
+        end_time = time + 4.months
+        options.merge!(:interval_unit => :month)
+
+        execute(scope, operation, column_name, start_time, end_time, options).should have(5).items
+      end
     end
 
-    it "should return one single day when same dates" do
-      start_time = time
-      end_time = time
+    describe "Time window" do
+      it "should consider rows outside current scope" do
+        Activity.create(:quantity => 3, :created_at => time)
+        scope = Activity.where(:quantity => 3)
 
-      execute(scope, operation, column_name, start_time, end_time, options).should have(1).items
+        execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [0, 1, 0]
+      end
+
+      it "should NOT consider rows outside current scope" do
+        Activity.create(:quantity => 0, :created_at => time)
+        scope = Activity.where(:quantity => 3)
+
+        execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [0, 0, 0]
+      end
+
+      it "should operate with a custom timestamp column" do
+        Activity.create(:quantity => 3, :finished_at => time)
+        options[:timestamp_column] = :finished_at
+        execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [0, 1, 0]
+      end
+
+      it "should return matching results taking timezone into account" do
+        Time.zone = ActiveSupport::TimeZone["Pacific Time (US & Canada)"]
+
+        Time.zone.name.should == "Pacific Time (US & Canada)" # ensure correctly set
+
+        # Outside left window limit
+        Activity.create(:quantity => 3, :created_at => start_time.beginning_of_day - 1.seconds)
+        # Inside by left window limit
+        Activity.create(:quantity => 3, :created_at => start_time.beginning_of_day + 1.seconds)
+        # Inside by right window limit
+        Activity.create(:quantity => 3, :created_at => end_time.end_of_day - 1.seconds)
+        # Outside by right window limit
+        Activity.create(:quantity => 3, :created_at => end_time.end_of_day + 1.seconds)
+
+        execute(scope, :count, column_name, start_time, end_time, options).map(&:last).should == [1, 0, 1]
+      end
     end
 
-    it "should return two day when consecutive" do
-      start_time = time
-      end_time = time + 1.day
-
-      execute(scope, operation, column_name, start_time, end_time, options).should have(2).items
-    end
-
-    it "should operate by day" do
-      start_time = time
-      end_time = time + 2.day
-      options.merge!(:interval_unit => :day)
-
-      execute(scope, operation, column_name, start_time, end_time, options).should have(3).items
-    end
-
-    it "should operate by week" do
-      start_time = time
-      end_time = time + 1.week
-      options.merge!(:interval_unit => :week)
-
-      execute(scope, operation, column_name, start_time, end_time, options).should have(2).items
-    end
-
-    it "should operate by month" do
-      start_time = time
-      end_time = time + 4.months
-      options.merge!(:interval_unit => :month)
-
-      execute(scope, operation, column_name, start_time, end_time, options).should have(5).items
-    end
-
-    it "should operate with a custom timestamp column" do
-      Activity.create(:quantity => 3, :finished_at => time)
-      options[:timestamp_column] = :finished_at
-      execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [0, 1, 0]
-    end
-
-    it "should return matching results taking timezone into account" do
-      Time.zone = ActiveSupport::TimeZone["Pacific Time (US & Canada)"]
-
-      Time.zone.name.should == "Pacific Time (US & Canada)" # ensure correctly set
-
-      # Outside left window limit
-      Activity.create(:quantity => 3, :created_at => start_time.beginning_of_day - 1.seconds)
-      # Inside by left window limit
-      Activity.create(:quantity => 3, :created_at => start_time.beginning_of_day + 1.seconds)
-      # Inside by right window limit
-      Activity.create(:quantity => 3, :created_at => end_time.end_of_day - 1.seconds)
-      # Outside by right window limit
-      Activity.create(:quantity => 3, :created_at => end_time.end_of_day + 1.seconds)
-
-      execute(scope, :count, column_name, start_time, end_time, options).map(&:last).should == [1, 0, 1]
-    end
-
-    it "should operate counts" do
-      Activity.create(:quantity => 3, :created_at => time)
-      execute(scope, :count, column_name, start_time, end_time, options).map(&:last).should == [0, 1, 0]
-    end
-
-    it "should consider rows outside current scope" do
-      Activity.create(:quantity => 3, :created_at => time)
-      scope = Activity.where(:quantity => 3)
-
-      execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [0, 1, 0]
-    end
-
-    it "should NOT consider rows outside current scope" do
-      Activity.create(:quantity => 0, :created_at => time)
-      scope = Activity.where(:quantity => 3)
-
-      execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [0, 0, 0]
-    end
-
-    describe "count" do
+    describe "Operation: count" do
        it "should count NON cumulatively" do
         Activity.create(:created_at => time - 10.day)
         Activity.create(:created_at => time)
@@ -126,7 +125,7 @@ describe PeriodicCalculations::Query do
       end
     end
 
-    describe "average" do
+    describe "Operation: average" do
       it "should calculate the average cumulatively" do
         Activity.create(:quantity => 4, :created_at => time)
         Activity.create(:quantity => 8, :created_at => time)
@@ -144,7 +143,7 @@ describe PeriodicCalculations::Query do
       end
     end
 
-    describe "sum" do
+    describe "Operation: sum" do
       it "should calculate the sum NON cumulatively" do
         Activity.create(:quantity => 4, :created_at => time)
         Activity.create(:quantity => 8, :created_at => time)
@@ -162,7 +161,7 @@ describe PeriodicCalculations::Query do
       end
     end
 
-    describe "minimum" do
+    describe "Operation: minimum" do
       it "should calculate the minimum no cumulatively" do
         Activity.create(:quantity => 4, :created_at => time)
         Activity.create(:quantity => 8, :created_at => time)
@@ -180,7 +179,7 @@ describe PeriodicCalculations::Query do
       end
     end
 
-    describe "maximum" do
+    describe "Operation: maximum" do
       it "should calculate the maximum NON cumulatively" do
         Activity.create(:quantity => 4, :created_at => time)
         Activity.create(:quantity => 8, :created_at => time)
