@@ -10,8 +10,13 @@ describe "Model" do
   end
 
   describe ".count_during" do
-    let(:start_time) { Time.now - 1.day }
-    let(:end_time) { Time.now + 1.day }
+    before do
+      result = double(:execute => true)
+      CountDuring::Query.stub(:new).and_return(result)
+    end
+
+    let(:start_time) { DateTime.now - 1.day }
+    let(:end_time) { DateTime.now + 1.day }
     let(:options) do
       {
         :cumulative => true,
@@ -19,14 +24,20 @@ describe "Model" do
       }
     end
 
-    it "executes a Query with the correct parameters" do
-      result = double(:execute => true)
+    it "builts the correct CountDuring::QueryOptions" do
+      CountDuring::QueryOptions
+        .should_receive(:new)
+        .with(start_time, end_time, options)
+        .once
 
+      klass.count_during(start_time, end_time, options)
+    end
+
+    it "executes a Query with an instance of CountDuring::QueryOptions" do
       CountDuring::Query
         .should_receive(:new)
-        .with(klass.all, start_time, end_time, options)
+        .with(klass.all, an_instance_of(CountDuring::QueryOptions))
         .once
-        .and_return(result)
 
       klass.count_during(start_time, end_time, options)
     end

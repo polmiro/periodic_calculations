@@ -5,7 +5,7 @@ describe CountDuring::Query do
   before { Activity.delete_all }
 
   let(:scope) { Activity.all }
-  let(:time) { Time.now }
+  let(:time) { DateTime.now }
 
   let(:start_time) { time - 1.day }
   let(:end_time) { time + 1.day }
@@ -13,8 +13,9 @@ describe CountDuring::Query do
 
   describe "#execute" do
 
-    def execute(*args)
-      CountDuring::Query.new(*args).execute
+    def execute(scope, *args)
+      query_options = CountDuring::QueryOptions.new(*args)
+      CountDuring::Query.new(scope, query_options).execute
     end
 
     it "should add missing values within range" do
@@ -56,7 +57,7 @@ describe CountDuring::Query do
       end_time = time + 4.months
       options.merge!(:interval_unit => :month)
 
-      execute(scope, start_time, end_time, options).should have(4).items
+      execute(scope, start_time, end_time, options).should have(5).items
     end
 
     it "should consider rows outside current scope" do

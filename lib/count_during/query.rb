@@ -2,33 +2,26 @@ module CountDuring
   class Query
     INTERVAL_UNIT = [:day, :week, :month, :year]
 
-    # Builds a duration count query with PostgresSQL window functions
-    #
     # TODO:
-    #  * Rails 4 compatible only right now (scoped vs all)
-    #  * prepared statement ?
+    #  * prepared statement?
     #  * non-cumulative query doesn't need subquery
     #  * allow any aggregate function
 
-    # Builds a duration count query
+    # Builds a duration count query with PostgresSQL window functions
     #
     # @param relation [ActiveRecord::Relation] Object to build query from
-    # @param window_start [DateTime] The window period start
-    # @param window_end [DateTime] The window period end
-    # @option options [Symbol] :interval_unit (:day) period of the counts
-    # @option options [Boolean] :cumulative If the query should accumulate counts over time
+    # @param query_options [QueryOptions]
     # @return [Array<Array>] for each period the time of the interval and the count of it
-    def initialize(relation, window_start, window_end, options = {})
+    def initialize(relation, query_options)
       @relation = relation
-
-      @window_start = window_start.utc
-      @window_end = window_end.utc
-      @interval_unit = options[:interval_unit] || :day
-      @cumulative = !!options[:cumulative]
-
-      unless INTERVAL_UNIT.include?(@interval_unit)
-        raise ArgumentError.new("Invalid interval unit")
-      end
+      @binds = {
+        :interval_unit   => query_options.interval_unit,
+        :interval        => "1 #{query_options.interval_unit.upcase}",
+        :window_start    => query_options.window_start,
+        :window_end      => query_options.window_end,
+        :window_function => (query_options.cumulative ? "ORDER" : "PARTITION"),
+        :timezone_offset => "#{query_options.timezone_offset} seconds"
+      }
     end
 
     def execute
@@ -42,33 +35,32 @@ module CountDuring
     private
 
     def sanitized_sql
-      ActiveRecord::Base.send(:sanitize_sql_array, [Arel.sql(sql), binds])
+      ActiveRecord::Base.send(:sanitize_sql_array, [Arel.sql(sql), @binds])
     end
 
     def sql
-      # How are timezones managed
+      # How are timezones managed?
       # * Take into account the timezone offset throughout the search,
       #   so that the periods are correctly grouped.
       # * Restore the timezone at the very end to return the date in UTC
       #   being consistent with the Rails convention
 
-      # result set sql with interval date
-      # (using shifted timezones utc_date -> zone_date)
-      sanitized_result_set_sql = @relation.select("date_trunc('#{@interval_unit}', activities.created_at + INTERVAL :timezone_offset) as unit, COUNT(*) AS count_unit").to_sql
-
+      # What does it do?
       # 1. group currently selected rows by the interval
-      # 2. make a union to add possible missing rows for empty days
+      # 2. make a union to add possible missing time points
       # 3. iterate over a window function that can cumulate the previous counters if needed
-      # 4. trim out the unneeded rows using outside the time window
+      # 4. trim out rows outside the time window
       #    Cannot be done before in the same query because window function iterates after the
-      #    where/group by/having clauses
+      #    where/group by/having clauses (could be improved for non cumulative queries)
+
+      sanitized_result_set_sql = @relation.select("date_trunc('#{@binds[:interval_unit]}', activities.created_at + INTERVAL :timezone_offset) as unit, COUNT(*) AS count_unit").to_sql
 
       <<-SQL
         SELECT unit, count_unit
         FROM
         (
           SELECT DISTINCT unit,
-                 SUM(count_unit) OVER (#{sanitized_window_function} BY unit) AS count_unit
+                 SUM(count_unit) OVER (#{@binds[:window_function]} BY unit) AS count_unit
           FROM
           (
             #{sanitized_result_set_sql}
@@ -91,21 +83,6 @@ module CountDuring
             date_trunc(:interval_unit, :window_end::timestamp + INTERVAL :timezone_offset)
         ORDER BY unit
       SQL
-    end
-
-    def binds
-      @binds ||= {
-        :interval_unit   => @interval_unit,
-        :interval        => "1 #{@interval_unit.upcase}",
-        :window_start    => @window_start,
-        :window_end      => @window_end,
-        :timezone_offset => "#{Time.now.in_time_zone.utc_offset} seconds"
-      }
-    end
-
-    # Retrieve the correspondant PostgreSQL window function
-    def sanitized_window_function
-      @cumulative ? "ORDER" : "PARTITION"
     end
 
   end
