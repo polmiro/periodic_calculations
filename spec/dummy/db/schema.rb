@@ -17,7 +17,8 @@ ActiveRecord::Schema.define(version: 20131203172849) do
   enable_extension "plpgsql"
 
   create_table "activities", force: true do |t|
-    t.integer  "quantity",   default: 0, null: false
+    t.integer  "quantity",    default: 0, null: false
+    t.datetime "finished_at"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

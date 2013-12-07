@@ -4,8 +4,6 @@ module PeriodicCalculations
 
     # TODO:
     #  * prepared statement?
-    #  * non-cumulative query doesn't need subquery
-    #  * allow any aggregate function
 
     # Builds a periodic operation query with PostgresSQL window functions
     #
@@ -14,8 +12,9 @@ module PeriodicCalculations
     # @return [Array<Array>] for each period the time of the interval and the count of it
     def initialize(relation, query_options)
       @relation = relation
+      @target_column = query_options.target_column
+      @timestamp_column = query_options.timestamp_column
       @operation = query_options.operation.upcase
-      @column_name = query_options.column_name
       @window_function = query_options.cumulative ? "ORDER" : "PARTITION"
       @binds = {
         :unit     => query_options.interval_unit,
@@ -104,14 +103,14 @@ module PeriodicCalculations
       # select frames an results
       relation_query = @relation
         .select(<<-SQL)
-          date_trunc(:unit, #{@relation.table_name}.created_at + INTERVAL :offset) AS frame,
-          #{@operation}(#{@column_name})                              AS result
+          date_trunc(:unit, #{@relation.table_name}.#{@timestamp_column} + INTERVAL :offset) AS frame,
+          #{@operation}(#{@target_column}) AS result
         SQL
 
       # optimize selection if not cumulative query
       if @window_function == "PARTITION"
         relation_query = relation_query.where(<<-SQL)
-          date_trunc(:unit, #{@relation.table_name}.created_at + INTERVAL :offset) BETWEEN
+          date_trunc(:unit, #{@relation.table_name}.#{@timestamp_column} + INTERVAL :offset) BETWEEN
             date_trunc(:unit, :start::timestamp + INTERVAL :offset)
             AND
             date_trunc(:unit, :end::timestamp + INTERVAL :offset)
@@ -120,7 +119,7 @@ module PeriodicCalculations
 
       # group results by frames
       relation_query = relation_query.group(<<-SQL)
-        date_trunc(:unit, #{@relation.table_name}.created_at + INTERVAL :offset)
+        date_trunc(:unit, #{@relation.table_name}.#{@timestamp_column} + INTERVAL :offset)
       SQL
 
       relation_query.to_sql

@@ -4,8 +4,6 @@ module PeriodicCalculations
 
     # TODO:
     #  * Rails 4 compatible only right now (scoped vs all)
-    #  * Add operation
-    #  * Add column_name
 
     module ClassMethods
       def periodic_count(*args)

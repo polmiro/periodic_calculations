@@ -4,7 +4,8 @@ module PeriodicCalculations
     INTERVAL_UNIT = [:day, :week, :month, :year]
 
     attr_reader :operation,
-                :column_name,
+                :target_column,
+                :timestamp_column,
                 :window_start,
                 :window_end,
                 :interval_unit,
@@ -13,7 +14,8 @@ module PeriodicCalculations
 
     def initialize(operation, column_name, window_start, window_end, options = {})
       @operation = operation
-      @column_name = column_name
+      @target_column = column_name
+      @timestamp_column = options[:timestamp_column] || :created_at
       @window_start = window_start
       @window_end = window_end
       @interval_unit = options[:interval_unit] || :day
@@ -27,7 +29,7 @@ module PeriodicCalculations
 
     def validate!
       validate_operation!
-      validate_column_name!
+      validate_target_column!
       validate_window!
       validate_interval_unit!
     end
@@ -38,9 +40,9 @@ module PeriodicCalculations
       end
     end
 
-    def validate_column_name!
-      unless @column_name.present?
-        raise ArgumentError.new("Column name must be present")
+    def validate_target_column!
+      unless @target_column.present?
+        raise ArgumentError.new("Target column name must be present")
       end
     end
 

@@ -62,6 +62,10 @@ describe PeriodicCalculations::QueryOptions do
       described_class.new(:count, :id, time, time)
     end
 
+    it "timestamp_column to :created_at" do
+      query_options.timestamp_column.should == :created_at
+    end
+
     it "interval_unit to :day" do
       query_options.interval_unit.should == :day
     end

@@ -62,6 +62,12 @@ describe PeriodicCalculations::Query do
       execute(scope, operation, column_name, start_time, end_time, options).should have(5).items
     end
 
+    it "should operate with a custom timestamp column" do
+      Activity.create(:quantity => 3, :finished_at => time)
+      options[:timestamp_column] = :finished_at
+      execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [0, 1, 0]
+    end
+
     it "should return matching results taking timezone into account" do
       Time.zone = ActiveSupport::TimeZone["Pacific Time (US & Canada)"]
 
