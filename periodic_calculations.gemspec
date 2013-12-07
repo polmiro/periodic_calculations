@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
   s.version     = PeriodicCalculations::VERSION
   s.authors     = ["Pol"]
   s.email       = ["polmiro@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "https://github.com/polmiro/periodic_calculations"
   s.summary     = "Retrieve periodic stats in periods of time"
-  s.description = "Retrieve periodic stats in periods of time"
+  s.description = "Periodic Calculations gem allows you to retrieve periodic results of aggregates that can be accumulated over time with PostgreSQL."
   s.license     = 'MIT'
 
   s.files         = `git ls-files`.split("\n")

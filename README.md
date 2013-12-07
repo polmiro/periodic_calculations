@@ -5,19 +5,4 @@
 [![Coverage Status](https://coveralls.io/repos/polmiro/periodic_calculations/badge.png)](https://coveralls.io/r/polmiro/periodic_calculations)
 [![Gem Version](https://badge.fury.io/rb/periodic_calculations.png)](http://badge.fury.io/rb/periodic_calculations)
 
-## Installation
-
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'periodic_calculations'
-```
-
-And then execute:
-
-
-```
-$ bundle
-```
-
-## Usage
+Periodic Calculations gem allows you to retrieve periodic results of aggregates that can be accumulated over time with PostgreSQL.
