@@ -5,23 +5,24 @@ module CountDuring
     # Builds a duration count query with PostgresSQL window functions
     #
     # TODO:
+    #  * Rails 4 compatible only right now (scoped vs all)
     #  * prepared statement ?
     #  * non-cumulative query doesn't need subquery
     #  * allow any aggregate function
 
     # Builds a duration count query
     #
-    # @param relation [ActiveRecord::Relation] object to build query from
-    # @option options [DateTime] :start_time When to start the query scope
-    # @option options [DateTime] :end_time When to end the query scope
+    # @param relation [ActiveRecord::Relation] Object to build query from
+    # @param window_start [DateTime] The window period start
+    # @param window_end [DateTime] The window period end
     # @option options [Symbol] :interval_unit (:day) period of the counts
     # @option options [Boolean] :cumulative If the query should accumulate counts over time
     # @return [Array<Array>] for each period the time of the interval and the count of it
-    def initialize(relation, options = {})
+    def initialize(relation, window_start, window_end, options = {})
       @relation = relation
 
-      @start_time = options[:start_time].utc
-      @end_time = options[:end_time].utc
+      @window_start = window_start.utc
+      @window_end = window_end.utc
       @interval_unit = options[:interval_unit] || :day
       @cumulative = !!options[:cumulative]
 
@@ -79,26 +80,26 @@ module CountDuring
 
             -- generate series within window (with shifted timezones utc_date -> zone_date)
             SELECT date_trunc(:interval_unit, serie) AS unit, 0 AS count_unit
-            FROM generate_series(:time_window_start::timestamp + INTERVAL :timezone_offset, :time_window_end::timestamp + INTERVAL :timezone_offset, :interval) AS serie
+            FROM generate_series(:window_start::timestamp + INTERVAL :timezone_offset, :window_end::timestamp + INTERVAL :timezone_offset, :interval) AS serie
           ) AS all_dates_results
         ) AS unbounded_results
         WHERE
           -- cut down with shifted input dates (utc date -> zone date)
           unit BETWEEN
-            date_trunc(:interval_unit, :time_window_start::timestamp + INTERVAL :timezone_offset)
+            date_trunc(:interval_unit, :window_start::timestamp + INTERVAL :timezone_offset)
             AND
-            date_trunc(:interval_unit, :time_window_end::timestamp + INTERVAL :timezone_offset)
+            date_trunc(:interval_unit, :window_end::timestamp + INTERVAL :timezone_offset)
         ORDER BY unit
       SQL
     end
 
     def binds
       @binds ||= {
-        :interval_unit     => @interval_unit,
-        :interval          => "1 #{@interval_unit}",
-        :time_window_start => @start_time,
-        :time_window_end   => @end_time,
-        :timezone_offset   => "#{Time.now.in_time_zone.utc_offset} seconds"
+        :interval_unit   => @interval_unit,
+        :interval        => "1 #{@interval_unit.upcase}",
+        :window_start    => @window_start,
+        :window_end      => @window_end,
+        :timezone_offset => "#{Time.now.in_time_zone.utc_offset} seconds"
       }
     end
 
@@ -106,6 +107,7 @@ module CountDuring
     def sanitized_window_function
       @cumulative ? "ORDER" : "PARTITION"
     end
+
   end
 
 end

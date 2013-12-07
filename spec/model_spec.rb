@@ -10,18 +10,25 @@ describe "Model" do
   end
 
   describe ".count_during" do
+    let(:start_time) { Time.now - 1.day }
+    let(:end_time) { Time.now + 1.day }
     let(:options) do
       {
-        :start_time => Time.now - 1.day,
-        :end_time => Time.now + 1.day,
         :cumulative => true,
-        :interval_unit => :day
+        :interval_unit => :month
       }
     end
 
     it "executes a Query with the correct parameters" do
-      CountDuring::Query.should_receive(:new).with(klass.all, options).and_return(double(:execute => true))
-      klass.count_during(options)
+      result = double(:execute => true)
+
+      CountDuring::Query
+        .should_receive(:new)
+        .with(klass.all, start_time, end_time, options)
+        .once
+        .and_return(result)
+
+      klass.count_during(start_time, end_time, options)
     end
   end
 end

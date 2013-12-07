@@ -3,8 +3,8 @@ module CountDuring
     extend ActiveSupport::Concern
 
     module ClassMethods
-      def count_during(options = {})
-        Query.new(all, options).execute
+      def count_during(window_start, window_end, options = {})
+        Query.new(all, window_start, window_end, options).execute
       end
     end
   end
