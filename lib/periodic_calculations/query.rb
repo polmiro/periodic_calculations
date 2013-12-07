@@ -33,6 +33,10 @@ module PeriodicCalculations
       end
     end
 
+    def to_sql
+      sanitized_sql
+    end
+
     private
 
     def sanitized_sql

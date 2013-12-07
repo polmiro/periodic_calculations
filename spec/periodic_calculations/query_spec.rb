@@ -13,6 +13,16 @@ describe PeriodicCalculations::Query do
   let(:end_time) { time + 1.day }
   let(:options) { {} }
 
+  describe "#to_sql" do
+    it "returns the sanitized_sql" do
+      query_options = PeriodicCalculations::QueryOptions.new(operation, column_name, start_time, end_time, options)
+      query = PeriodicCalculations::Query.new(scope, query_options)
+
+      query.stub(:sanitized_sql).and_return("wohoo")
+      query.to_sql.should == "wohoo"
+    end
+  end
+
   describe "#execute" do
 
     def execute(scope, *args)
