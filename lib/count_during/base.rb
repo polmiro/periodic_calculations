@@ -4,7 +4,7 @@ module CountDuring
 
     module ClassMethods
       def count_during(options = {})
-        DurationCount.new(all, options).execute
+        Query.new(all, options).execute
       end
     end
   end

@@ -21,8 +21,8 @@ describe TestModel do
       }
     end
 
-    it "executes a DurationCount query" do
-      CountDuring::DurationCount.should_receive(:new).with(klass.all, options).and_return(double(:execute => true))
+    it "executes a Query with the correct parameters" do
+      CountDuring::Query.should_receive(:new).with(klass.all, options).and_return(double(:execute => true))
       klass.count_during(options)
     end
   end

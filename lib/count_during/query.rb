@@ -1,5 +1,5 @@
 module CountDuring
-  class DurationCount
+  class Query
     INTERVAL_UNIT = [:day, :week, :month, :year]
 
     # Builds a duration count query with PostgresSQL window functions
