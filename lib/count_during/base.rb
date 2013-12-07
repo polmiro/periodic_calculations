@@ -4,7 +4,7 @@ module CountDuring
 
     module ClassMethods
       def count_during(options = {})
-        DurationCount.new(scoped, options).execute
+        DurationCount.new(all, options).execute
       end
     end
   end
