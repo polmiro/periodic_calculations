@@ -1,0 +1,9 @@
+pkg/*
+Gemfile.lock
+*.gem
+.bundle
+nbproject/*
+bin
+.rspec
+.rbenv-version
+coverage/
