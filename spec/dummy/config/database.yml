@@ -1,10 +1,20 @@
-test:
+development:
   adapter: postgresql
   encoding: utf8
   database: count_during_development
   pool: 5
   host: 127.0.0.1
-  username: count_during
+  username: rewardli_su
+  password:
+  timeout: 5000
+
+test:
+  adapter: postgresql
+  encoding: utf8
+  database: count_during_test
+  pool: 5
+  host: 127.0.0.1
+  username: rewardli_su
   password:
   timeout: 5000
 

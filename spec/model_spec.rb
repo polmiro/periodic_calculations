@@ -1,8 +1,8 @@
-describe TestModel do
+describe "Model" do
 
-  before { clean_database }
+  before { Activity.delete_all }
 
-  let(:klass) { TestModel }
+  let(:klass) { Activity }
   let(:model) { klass.new }
 
   it "has a class method .count_during" do

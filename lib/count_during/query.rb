@@ -32,13 +32,17 @@ module CountDuring
 
     def execute
       ActiveRecord::Base.connection_pool.with_connection do |connection|
-        connection.exec_query(sql, nil, binds).map do |elem|
+        connection.execute(sanitized_sql).map do |elem|
           [Date.parse(elem["unit"]).to_time, elem["count_unit"].to_i]
         end
       end
     end
 
     private
+
+    def sanitized_sql
+      ActiveRecord::Base.send(:sanitize_sql_array, [Arel.sql(sql), binds])
+    end
 
     def sql
       # How are timezones managed
@@ -57,7 +61,6 @@ module CountDuring
       # 4. trim out the unneeded rows using outside the time window
       #    Cannot be done before in the same query because window function iterates after the
       #    where/group by/having clauses
-
 
       <<-SQL
         SELECT unit, count_unit
@@ -90,7 +93,7 @@ module CountDuring
     end
 
     def binds
-      {
+      @binds ||= {
         :interval_unit     => @interval_unit,
         :interval          => "1 #{@interval_unit}",
         :time_window_start => @start_time,
