@@ -16,7 +16,7 @@ module PeriodicCalculations
       @relation = relation
       @operation = query_options.operation.upcase
       @column_name = query_options.column_name
-      @window_function = window_function(query_options)
+      @window_function = query_options.cumulative ? "ORDER" : "PARTITION"
       @binds = {
         :unit     => query_options.interval_unit,
         :interval => "1 #{query_options.interval_unit.upcase}",
@@ -49,18 +49,12 @@ module PeriodicCalculations
 
       # What does it do?
       # 1. group currently selected rows by the interval
-      # 2. make a union to add possible missing time points
-      # 3. iterate over a window function that can cumulate the previous counters if needed
-      # 4. trim out rows outside the time window
+      # 2. trim out unneeded rows if query is not cumulative
+      # 3. make a union to add possible missing time points
+      # 4. iterate over a window function that can cumulate the previous counters if needed
+      # 5. trim out rows outside the time window
       #    Cannot be done before in the same query because window function iterates after the
       #    where/group by/having clauses (could be improved for non cumulative queries)
-
-      select_sql = <<-SQL
-        date_trunc(:unit, activities.created_at + INTERVAL :offset) AS frame,
-        #{@operation}(#{@column_name})                              AS result
-      SQL
-
-      frame_and_result_select = @relation.select(select_sql).to_sql
 
       <<-SQL
         WITH
@@ -79,8 +73,7 @@ module PeriodicCalculations
           -- preprocess results grouping by interval
           -- (with shifted timezones utc_date -> zone_date)
           , preprocessed_results AS (
-            #{frame_and_result_select}
-            GROUP BY date_trunc(:unit, activities.created_at + INTERVAL :offset)
+            #{relation_sql}
           )
 
           -- running window function calculate results and fill up gaps
@@ -107,8 +100,30 @@ module PeriodicCalculations
       SQL
     end
 
-    def window_function(query_options)
-      query_options.cumulative ? "ORDER" : "PARTITION"
+    def relation_sql
+      # select frames an results
+      relation_query = @relation
+        .select(<<-SQL)
+          date_trunc(:unit, #{@relation.table_name}.created_at + INTERVAL :offset) AS frame,
+          #{@operation}(#{@column_name})                              AS result
+        SQL
+
+      # optimize selection if not cumulative query
+      if @window_function == "PARTITION"
+        relation_query = relation_query.where(<<-SQL)
+          date_trunc(:unit, #{@relation.table_name}.created_at + INTERVAL :offset) BETWEEN
+            date_trunc(:unit, :start::timestamp + INTERVAL :offset)
+            AND
+            date_trunc(:unit, :end::timestamp + INTERVAL :offset)
+        SQL
+      end
+
+      # group results by frames
+      relation_query = relation_query.group(<<-SQL)
+        date_trunc(:unit, #{@relation.table_name}.created_at + INTERVAL :offset)
+      SQL
+
+      relation_query.to_sql
     end
 
   end
