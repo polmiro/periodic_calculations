@@ -32,17 +32,13 @@ module CountDuring
 
     def execute
       ActiveRecord::Base.connection_pool.with_connection do |connection|
-        connection.execute(sanitized_sqled_sql).map do |elem|
+        connection.exec_query(sql, nil, binds).map do |elem|
           [Date.parse(elem["unit"]).to_time, elem["count_unit"].to_i]
         end
       end
     end
 
     private
-
-    def sanitized_sql
-      sanitize_sql_array([Arel.sql(sql), sql_binds])
-    end
 
     def sql
       # How are timezones managed
@@ -53,7 +49,7 @@ module CountDuring
 
       # result set sql with interval date
       # (using shifted timezones utc_date -> zone_date)
-      sanitized_result_set_sql = @relation.select("date_trunc('#{interval_unit}', activities.created_at + INTERVAL :timezone_offset) as unit, COUNT(*) AS count_unit").to_sql
+      sanitized_result_set_sql = @relation.select("date_trunc('#{@interval_unit}', activities.created_at + INTERVAL :timezone_offset) as unit, COUNT(*) AS count_unit").to_sql
 
       # 1. group currently selected rows by the interval
       # 2. make a union to add possible missing rows for empty days
@@ -93,13 +89,13 @@ module CountDuring
       SQL
     end
 
-    def sql_binds
+    def binds
       {
         :interval_unit     => @interval_unit,
         :interval          => "1 #{@interval_unit}",
         :time_window_start => @start_time,
         :time_window_end   => @end_time,
-        :timezone_offset   => "#{Time.zone.now.utc_offset} seconds"
+        :timezone_offset   => "#{Time.now.in_time_zone.utc_offset} seconds"
       }
     end
 
