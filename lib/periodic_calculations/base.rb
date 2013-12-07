@@ -29,7 +29,7 @@ module PeriodicCalculations
       def periodic_calculation(operation, column_name, window_start, window_end, options = {})
         query_options = QueryOptions.new(operation, column_name, window_start, window_end, options)
         query = Query.new(all, query_options)
-        query.execute
+        LazyQuery.new(query)
       end
     end
   end
