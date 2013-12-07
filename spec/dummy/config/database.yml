@@ -1,0 +1,10 @@
+test:
+  adapter: postgresql
+  encoding: utf8
+  database: count_during_development
+  pool: 5
+  host: 127.0.0.1
+  username: count_during
+  password:
+  timeout: 5000
+
