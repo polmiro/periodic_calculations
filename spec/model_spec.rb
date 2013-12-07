@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe TestModel do
 
   before { clean_database }
