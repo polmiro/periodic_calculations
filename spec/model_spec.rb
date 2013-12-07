@@ -52,8 +52,8 @@ describe "Model" do
 
     let(:operation) { :count }
     let(:column_name) { :id }
-    let(:start_time) { DateTime.now - 1.day }
-    let(:end_time) { DateTime.now + 1.day }
+    let(:start_time) { Time.now - 1.day }
+    let(:end_time) { Time.now + 1.day }
     let(:options) do
       {
         :cumulative => true,

@@ -47,8 +47,8 @@ module PeriodicCalculations
     end
 
     def validate_window!
-      unless window_start.is_a?(DateTime) && window_end.is_a?(DateTime)
-        raise ArgumentError.new("Invalid DateTime window")
+      unless window_start.is_a?(Time) && window_end.is_a?(Time)
+        raise ArgumentError.new("Invalid Time window")
       end
     end
 

@@ -5,7 +5,7 @@ describe PeriodicCalculations::Query do
   before { Activity.delete_all }
 
   let(:scope) { Activity.all }
-  let(:time) { DateTime.now }
+  let(:time) { Time.now }
 
   let(:operation) { :count }
   let(:column_name) { :id }
@@ -56,7 +56,7 @@ describe PeriodicCalculations::Query do
       end
 
       it "should operate by month" do
-        start_time = time
+        start_time = time.beginning_of_month
         end_time = time + 4.months
         options.merge!(:interval_unit => :month)
 
