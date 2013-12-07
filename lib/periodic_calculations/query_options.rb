@@ -1,14 +1,19 @@
 module PeriodicCalculations
   class QueryOptions
+    OPERATION = [:count, :max, :min, :sum, :avg]
     INTERVAL_UNIT = [:day, :week, :month, :year]
 
-    attr_reader :window_start,
+    attr_reader :operation,
+                :column_name,
+                :window_start,
                 :window_end,
                 :interval_unit,
                 :cumulative,
                 :timezone_offset
 
-    def initialize(window_start, window_end, options = {})
+    def initialize(operation, column_name, window_start, window_end, options = {})
+      @operation = operation
+      @column_name = column_name
       @window_start = window_start
       @window_end = window_end
       @interval_unit = options[:interval_unit] || :day
@@ -21,8 +26,22 @@ module PeriodicCalculations
     private
 
     def validate!
+      validate_operation!
+      validate_column_name!
       validate_window!
       validate_interval_unit!
+    end
+
+    def validate_operation!
+      unless OPERATION.include?(@operation)
+        raise ArgumentError.new("Invalid operation")
+      end
+    end
+
+    def validate_column_name!
+      unless @column_name.present?
+        raise ArgumentError.new("Column name must be present")
+      end
     end
 
     def validate_window!
