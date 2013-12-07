@@ -62,6 +62,23 @@ describe PeriodicCalculations::Query do
       execute(scope, operation, column_name, start_time, end_time, options).should have(5).items
     end
 
+    it "should return matching results taking timezone into account" do
+      Time.zone = ActiveSupport::TimeZone["Pacific Time (US & Canada)"]
+
+      Time.zone.name.should == "Pacific Time (US & Canada)" # ensure correctly set
+
+      # Outside left window limit
+      Activity.create(:quantity => 3, :created_at => start_time.beginning_of_day - 1.seconds)
+      # Inside by left window limit
+      Activity.create(:quantity => 3, :created_at => start_time.beginning_of_day + 1.seconds)
+      # Inside by right window limit
+      Activity.create(:quantity => 3, :created_at => end_time.end_of_day - 1.seconds)
+      # Outside by right window limit
+      Activity.create(:quantity => 3, :created_at => end_time.end_of_day + 1.seconds)
+
+      execute(scope, :count, column_name, start_time, end_time, options).map(&:last).should == [1, 0, 1]
+    end
+
     it "should operate counts" do
       Activity.create(:quantity => 3, :created_at => time)
       execute(scope, :count, column_name, start_time, end_time, options).map(&:last).should == [0, 1, 0]

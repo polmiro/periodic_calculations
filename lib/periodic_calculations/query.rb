@@ -94,7 +94,7 @@ module PeriodicCalculations
             ) AS fulfilled_gaps
           )
 
-        -- cut out values outside window (needed here if cumulative, room for improvement)
+        -- cut out values outside window
         -- (with shifted timezones utc_date -> zone_date)
         SELECT    frame,
                   result
