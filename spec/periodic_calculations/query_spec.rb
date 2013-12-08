@@ -3,7 +3,7 @@ describe PeriodicCalculations::Query do
   before { Activity.delete_all }
 
   let(:scope) { Activity.all }
-  let(:time) { Time.now }
+  let(:time) { Time.zone.now }
 
   let(:operation) { :count }
   let(:column_name) { :id }
@@ -94,9 +94,9 @@ describe PeriodicCalculations::Query do
       end
 
       it "should return matching results taking timezone into account" do
-        Time.zone = ActiveSupport::TimeZone["Pacific Time (US & Canada)"]
+        Time.zone = ActiveSupport::TimeZone["Asia/Tokyo"]
 
-        Time.zone.name.should == "Pacific Time (US & Canada)" # ensure correctly set
+        Time.zone.name.should == "Asia/Tokyo" # ensure correctly set
 
         # Outside left window limit
         Activity.create(:quantity => 3, :created_at => start_time.beginning_of_day - 1.seconds)
