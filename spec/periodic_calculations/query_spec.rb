@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe PeriodicCalculations::Query do
 
   before { Activity.delete_all }

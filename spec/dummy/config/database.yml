@@ -14,7 +14,7 @@ test:
   database: periodic_calculations_test
   pool: 5
   host: 127.0.0.1
-  username: rewardli_su
+  username: postgres
   password:
   timeout: 5000
 

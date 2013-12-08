@@ -4,6 +4,5 @@ Gemfile.lock
 .bundle
 nbproject/*
 bin
-.rspec
 .rbenv-version
 coverage/
