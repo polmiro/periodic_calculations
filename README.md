@@ -6,3 +6,5 @@
 [![Gem Version](https://badge.fury.io/rb/periodic_calculations.png)](http://badge.fury.io/rb/periodic_calculations)
 
 Periodic Calculations gem allows you to retrieve periodic results of aggregates that can be accumulated over time with PostgreSQL.
+
+Check out a demo [here](http://periodic-calculations-demo.herokuapp.com)
