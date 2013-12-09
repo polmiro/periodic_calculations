@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    periodic_calculations (0.0.2)
+    periodic_calculations (0.0.3)
       rails (>= 3.2)
       railties
 
