@@ -3,6 +3,10 @@ module PeriodicCalculations
     extend ActiveSupport::Concern
 
     module ClassMethods
+      def periodic_count_all(*args)
+        periodic_calculation(:count, "*", *args)
+      end
+
       def periodic_count(*args)
         periodic_calculation(:count, *args)
       end

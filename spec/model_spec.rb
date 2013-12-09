@@ -9,6 +9,13 @@ describe "Model" do
     klass.should respond_to(:periodic_calculation)
   end
 
+  describe ".periodic_count_all" do
+    it "calculates a periodic count operation for all rows" do
+      klass.should_receive(:periodic_calculation).with(:count, "*", :args).once.and_return(true)
+      klass.periodic_count_all(:args)
+    end
+  end
+
   describe ".periodic_count" do
     it "calculates a periodic count operation" do
       klass.should_receive(:periodic_calculation).with(:count, :args).once.and_return(true)
