@@ -2,9 +2,6 @@ module PeriodicCalculations
   module Base
     extend ActiveSupport::Concern
 
-    # TODO:
-    #  * Rails 4 compatible only right now (scoped vs all)
-
     module ClassMethods
       def periodic_count(*args)
         periodic_calculation(:count, *args)
@@ -28,7 +25,8 @@ module PeriodicCalculations
 
       def periodic_calculation(operation, column_name, window_start, window_end, options = {})
         query_options = QueryOptions.new(operation, column_name, window_start, window_end, options)
-        query = Query.new(all, query_options)
+        current_scope = Rails::VERSION::MAJOR >= 4 ? all : scoped
+        query = Query.new(current_scope, query_options)
         LazyQuery.new(query)
       end
     end
