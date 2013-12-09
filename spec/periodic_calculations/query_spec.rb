@@ -124,12 +124,13 @@ describe PeriodicCalculations::Query do
 
         # outside interval matters
         Activity.create(:created_at => time - 10.day)
+        Activity.create(:created_at => time - 10.day)
 
         Activity.create(:created_at => time - 1.day)
         Activity.create(:created_at => time)
         Activity.create(:created_at => time + 1.day)
 
-        execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [2, 3, 4]
+        execute(scope, operation, column_name, start_time, end_time, options).map(&:last).should == [3, 4, 5]
       end
     end
 

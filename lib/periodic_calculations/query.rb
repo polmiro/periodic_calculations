@@ -16,6 +16,7 @@ module PeriodicCalculations
       @timestamp_column = query_options.timestamp_column
       @operation = query_options.operation.upcase
       @window_function = query_options.cumulative ? "ORDER" : "PARTITION"
+      @inside_operation = query_options.operation == :count ? "SUM" : query_options.operation.upcase
       @binds = {
         :unit     => query_options.interval_unit,
         :interval => "1 #{query_options.interval_unit.upcase}",
@@ -82,7 +83,7 @@ module PeriodicCalculations
           -- running window function calculate results and fill up gaps
           , results AS (
             SELECT  DISTINCT frame,
-                    #{@operation}(result) OVER (#{@window_function} BY frame) AS result
+                    #{@inside_operation}(result) OVER (#{@window_function} BY frame) AS result
             FROM (
               SELECT frame, result FROM preprocessed_results
               UNION ALL
