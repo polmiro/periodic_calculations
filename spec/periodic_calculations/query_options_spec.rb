@@ -21,7 +21,7 @@ describe PeriodicCalculations::QueryOptions do
 
     it "no column_name" do
       expect {
-        described_class.new(nil, nil, Time.now, Time.now)
+        described_class.new(:count, nil, Time.now, Time.now)
       }.to raise_error(ArgumentError)
     end
 
