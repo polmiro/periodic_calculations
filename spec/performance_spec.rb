@@ -1,3 +1,5 @@
+require 'benchmark'
+
 describe "Performance tests", :performance => true do
   PERIODS = 300
   DATA_POINTS_PER_INTERVAL = 3000
