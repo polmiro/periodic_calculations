@@ -76,19 +76,20 @@ module PeriodicCalculations
 
           -- preprocess results grouping by interval
           -- (with shifted timezones utc_date -> zone_date)
-          , preprocessed_results AS (
+          , partials AS (
             #{relation_sql}
           )
 
           -- running window function calculate results and fill up gaps
           , results AS (
-            SELECT  DISTINCT frame,
+            SELECT  frame,
                     #{@inside_operation}(result) OVER (#{@window_function} BY frame) AS result
             FROM (
-              SELECT frame, result FROM preprocessed_results
-              UNION ALL
-              SELECT frame, result FROM grid
-            ) AS fulfilled_gaps
+              SELECT  COALESCE(partials.frame, grid.frame) AS frame,
+                      COALESCE(partials.result, grid.result) AS result
+              FROM partials
+              FULL OUTER JOIN grid ON partials.frame = grid.frame
+            ) AS merged
           )
 
         -- cut out values outside window
